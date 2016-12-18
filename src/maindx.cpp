@@ -1016,7 +1016,7 @@ ADDON_STATUS ADDON_Create(void* hdl, void* props)
 // This dll must cease all runtime activities
 // !!! Add-on master function !!!
 //-----------------------------------------------------------------------------
-extern "C" void ADDON_Stop()
+extern "C" void Stop()
 {
 }
 
