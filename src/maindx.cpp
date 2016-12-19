@@ -1148,3 +1148,12 @@ extern "C" ADDON_STATUS ADDON_SetSetting(const char *strSetting, const void* val
 extern "C" void ADDON_Announce(const char *flag, const char *sender, const char *message, const void *data)
 {
 }
+
+extern "C" ADDON_STATUS ADDON_CreateInstance(int instanceType, const char* instanceID, const void* instanceProps, void* instanceFunctions, void* kodiInstance, void** addonInstance)
+{
+  return ADDON_STATUS_UNKNOWN;
+}
+
+extern "C" void ADDON_DestroyInstance(int instanceType, const char* instanceID, void* instance)
+{
+}
