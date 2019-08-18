@@ -93,7 +93,7 @@ const std::vector<std::string> g_fileTextures =
 #if defined(HAS_GL)
 
 std::string fsHeader =
-R"shader(#version 130
+R"shader(#version 150
 
 #extension GL_OES_standard_derivatives : enable
 
@@ -109,7 +109,13 @@ uniform sampler2D iChannel1;
 uniform sampler2D iChannel2;
 uniform sampler2D iChannel3;
 
+out vec4 FragColor;
+
 #define iTime iGlobalTime
+
+#ifndef texture2D
+#define texture2D texture
+#endif
 )shader";
 
 std::string fsFooter =
@@ -119,8 +125,8 @@ void main(void)
   vec4 color = vec4(0.0, 0.0, 0.0, 1.0);
   mainImage(color, gl_FragCoord.xy);
   color.w = 1.0;
-  gl_FragColor = color;
-};
+  FragColor = color;
+}
 )shader";
 
 #else
@@ -156,7 +162,7 @@ void main(void)
   mainImage(color, gl_FragCoord.xy);
   color.w = 1.0;
   gl_FragColor = color;
-};
+}
 )shader";
 
 #endif

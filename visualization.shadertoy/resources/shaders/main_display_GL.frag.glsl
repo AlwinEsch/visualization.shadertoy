@@ -1,4 +1,4 @@
-#version 130
+#version 150
 
 uniform sampler2D uTexture;
 
@@ -8,5 +8,5 @@ out vec4 FragColor;
 
 void main(void)
 {
-  FragColor = texture2D(uTexture, vTextureCoord);
+  FragColor = texture(uTexture, vTextureCoord);
 }
