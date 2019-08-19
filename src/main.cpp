@@ -21,7 +21,10 @@
 #include "main.h"
 #include "lodepng.h"
 
+#define _USE_MATH_DEFINES
+#include <algorithm>
 #include <chrono>
+#include <math.h>
 
 #define SMOOTHING_TIME_CONSTANT (0.8)
 #define MIN_DECIBELS (-100.0)
@@ -152,6 +155,9 @@ uniform sampler2D iChannel2;
 uniform sampler2D iChannel3;
 
 #define iTime iGlobalTime
+#ifndef texture
+#define texture texture2D
+#endif
 )shader";
 
 std::string fsFooter =
@@ -174,32 +180,19 @@ CVisualizationShadertoy::CVisualizationShadertoy()
     m_pcm(new float[AUDIO_BUFFER]())
 {
   m_currentPreset = kodi::GetSettingInt("lastpresetidx");
-
-  static const GLfloat vertex_data[] =
-  {
-    -1.0, 1.0, 1.0, 1.0,
-     1.0, 1.0, 1.0, 1.0,
-     1.0,-1.0, 1.0, 1.0,
-    -1.0,-1.0, 1.0, 1.0,
-  };
-
-  // Upload vertex data to a buffer
-  glGenBuffers(1, &m_state.vertex_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, m_state.vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
 }
 
 CVisualizationShadertoy::~CVisualizationShadertoy()
 {
-  UnloadPreset();
-  UnloadTextures();
+//  UnloadPreset();
+//  UnloadTextures();
 
   delete [] m_audioData;
   delete [] m_magnitudeBuffer;
   delete [] m_pcm;
   free(m_kissCfg);
 
-  glDeleteBuffers(1, &m_state.vertex_buffer);
+//  glDeleteBuffers(1, &m_state.vertex_buffer);
 }
 
 //-- Render -------------------------------------------------------------------
@@ -227,6 +220,19 @@ bool CVisualizationShadertoy::Start(int iChannels, int iSamplesPerSec, int iBits
   printf("Start %i %i %i %s\n", iChannels, iSamplesPerSec, iBitsPerSample, szSongName.c_str());
 #endif
 
+  static const GLfloat vertex_data[] =
+  {
+    -1.0, 1.0, 1.0, 1.0,
+     1.0, 1.0, 1.0, 1.0,
+     1.0,-1.0, 1.0, 1.0,
+    -1.0,-1.0, 1.0, 1.0,
+  };
+
+  // Upload vertex data to a buffer
+  glGenBuffers(1, &m_state.vertex_buffer);
+  glBindBuffer(GL_ARRAY_BUFFER, m_state.vertex_buffer);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+
   m_samplesPerSec = iSamplesPerSec;
   Launch(m_currentPreset);
   m_initialized = true;
@@ -240,6 +246,11 @@ void CVisualizationShadertoy::Stop()
 #ifdef DEBUG_PRINT
   printf("Stop\n");
 #endif
+
+  UnloadPreset();
+  UnloadTextures();
+
+  glDeleteBuffers(1, &m_state.vertex_buffer);
 }
 
 
