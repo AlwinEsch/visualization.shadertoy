@@ -34,7 +34,8 @@ set(SHADERTOY_SOURCES src/lodepng.cpp
                       src/main.cpp)
 
 set(SHADERTOY_HEADERS src/lodepng.h
-                      src/main.h)
+                      src/main.h
+                      src/jsmn/jsmn.h)
 
 list(APPEND DEPLIBS kissfft)
 

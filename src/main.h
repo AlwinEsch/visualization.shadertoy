@@ -36,6 +36,8 @@ public:
   CVisualizationShadertoy();
   ~CVisualizationShadertoy() override;
 
+  ADDON_STATUS Create() override;
+
   bool Start(int channels, int samplesPerSec, int bitsPerSample, std::string songName) override;
   void Stop() override;
   void AudioData(const float* audioData, int audioDataLength, float* freqData, int freqDataLength) override;
@@ -63,12 +65,14 @@ private:
   float LinearToDecibels(float linear);
   int DetermineBitsPrecision();
   double MeasurePerformance(const std::string& shaderPath, int size);
+  bool LoadDefaultShaders();
 
   kiss_fft_cfg m_kissCfg;
   GLubyte* m_audioData;
   float* m_magnitudeBuffer;
   float* m_pcm;
 
+  bool m_creationOK = false;
   bool m_initialized = false;
   int64_t m_initialTime = 0; // in ms
   int m_bitsPrecision = 0;

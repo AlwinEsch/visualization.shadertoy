@@ -20,10 +20,12 @@
 
 #include "main.h"
 #include "lodepng.h"
+#include "jsmn/jsmn.h"
 
 #define _USE_MATH_DEFINES
 #include <algorithm>
 #include <chrono>
+#include <fstream>
 #include <math.h>
 
 #define SMOOTHING_TIME_CONSTANT (0.8)
@@ -38,6 +40,9 @@
 #define GL_RED GL_LUMINANCE
 #endif
 
+namespace
+{
+
 struct Preset
 {
   std::string name;
@@ -45,48 +50,12 @@ struct Preset
   int channel[4];
 };
 
-// NOTE: With "#if defined(HAS_GL)" the use of some shaders is avoided
-//       as they can cause problems on weaker systems.
-const std::vector<Preset> g_presets =
-{
-   {"2D LED Spectrum by un1versal",             "2Dspectrum.frag.glsl",             99, -1, -1, -1},
-   {"Audio Eclipse by airtight",                "audioeclipse.frag.glsl",           99, -1, -1, -1},
-   {"Audio Reaktive by choard1895",             "audioreaktive.frag.glsl",          99, -1, -1, -1},
-   {"AudioVisual by Passion",                   "audiovisual.frag.glsl",            99, -1, -1, -1},
-   {"Beating Circles by Phoenix72",             "beatingcircles.frag.glsl",         99, -1, -1, -1},
-   {"BPM by iq",                                "bpm.frag.glsl",                    99, -1, -1, -1},
-   {"Circle Wave by TekF",                      "circlewave.frag.glsl",             99, -1, -1, -1},
+std::vector<Preset> g_presets;
 #if defined(HAS_GL)
-   {"Circuits by Kali",                         "circuits.frag.glsl",               99,  7, -1, -1},
-   {"Colored Bars by novalis",                  "coloredbars.frag.glsl",            99, -1, -1, -1},
-   {"Cubescape by iq",                          "cubescape.frag.glsl",              99,  5, -1, -1},
+const std::string g_presetsFile = "presets_GL.json";
+#else
+const std::string g_presetsFile = "presets_GLES.json";
 #endif
-   {"Dancing Metalights by Danguafare",         "dancingmetalights.frag.glsl",      99, -1, -1, -1},
-   {"The Disco Tunnel by poljere",              "discotunnel.frag.glsl",             2, 13, 99, -1},
-   {"Electric pulse by un1versal",              "electricpulse.frag.glsl",          99, -1, -1, -1},
-#if defined(HAS_GL)
-   {"Fractal Land by Kali",                     "fractalland.frag.glsl",             2, 13, 99, -1},
-#endif
-   {"Gameboy by iq",                            "gameboy.frag.glsl",                99, -1, -1, -1},
-   {"Input Sound by iq",                        "input.frag.glsl",                  99, -1, -1, -1},
-#if defined(HAS_GL)
-   {"I/O by movAX13h",                          "io.frag.glsl",                     99, -1, -1, -1},
-#endif
-   {"Kaleidoscope Visualizer by Qqwy",          "kaleidoscopevisualizer.frag.glsl", 99, 15, -1, -1},
-   {"LED spectrum by simesgreen",               "ledspectrum.frag.glsl",            99, -1, -1, -1},
-   {"Polar Beats by sauj123",                   "polarbeats.frag.glsl",             99, -1, -1, -1},
-   {"Simplicity Galaxy by CBS",                 "simplicitygalaxy.frag.glsl",       99, -1, -1, -1},
-   {"Sound Flower by iq",                       "soundflower.frag.glsl",            99, -1, -1, -1},
-   {"Sound sinus wave by Eitraz",               "soundsinuswave.frag.glsl",         99, -1, -1, -1},
-   {"Spectrometer by jaba",                     "spectrometer.frag.glsl",           99, -1, -1, -1},
-   {"symmetrical sound visualiser by thelinked","symmetricalsound.frag.glsl",       99, -1, -1, -1},
-   {"Twisted Rings by poljere",                 "twistedrings.frag.glsl",           99, -1, -1, -1},
-   {"Undulant Spectre by mafik",                "undulantspectre.frag.glsl",        99, -1, -1, -1},
-#if defined(HAS_GL)
-   {"Demo - Volumetric Lines by iq",            "volumetriclines.frag.glsl",        99, -1, -1, -1},
-#endif
-   {"Waves Remix by ADOB",                      "wavesremix.frag.glsl",             99, -1, -1, -1}
-};
 
 const std::vector<std::string> g_fileTextures =
 {
@@ -195,17 +164,33 @@ void main(void)
 
 #endif
 
+// chunk_to_int() returns the integer from the C string from the token tok in json string str
+// Used in ADDON_Create when parsing json file
+int chunk_to_int(const char *str, jsmntok_t *tok)
+{
+  char* ss = static_cast<char*>(malloc(sizeof(char) * (tok->end - tok->start + 1)));
+  int i;
+  for (i = tok->start; i < tok->end; i++)
+  {
+    ss[i - tok->start] = str[i];
+  }
+  ss[i - tok->start] = '\0';
+
+  // if ss is not a valid integer string, result = 0
+  int result = static_cast<int>(strtol(ss, nullptr, 0));
+  free(ss);
+
+  return result;
+}
+
+} // namespace
+
 CVisualizationShadertoy::CVisualizationShadertoy()
   : m_kissCfg(kiss_fft_alloc(AUDIO_BUFFER, 0, nullptr, nullptr)),
     m_audioData(new GLubyte[AUDIO_BUFFER]()),
     m_magnitudeBuffer(new float[NUM_BANDS]()),
     m_pcm(new float[AUDIO_BUFFER]())
 {
-  m_settingsUseOwnshader = kodi::GetSettingBoolean("ownshader");
-  if (m_settingsUseOwnshader)
-    m_currentPreset = -1;
-  else
-    m_currentPreset = kodi::GetSettingInt("lastpresetidx");
 }
 
 CVisualizationShadertoy::~CVisualizationShadertoy()
@@ -214,6 +199,22 @@ CVisualizationShadertoy::~CVisualizationShadertoy()
   delete [] m_magnitudeBuffer;
   delete [] m_pcm;
   free(m_kissCfg);
+}
+
+ADDON_STATUS CVisualizationShadertoy::Create()
+{
+  m_settingsUseOwnshader = kodi::GetSettingBoolean("ownshader");
+  if (m_settingsUseOwnshader)
+    m_currentPreset = -1;
+  else
+  {
+    m_currentPreset = kodi::GetSettingInt("lastpresetidx");
+    if (!LoadDefaultShaders())
+      return ADDON_STATUS_UNKNOWN;
+  }
+
+  m_creationOK = true;
+  return ADDON_STATUS_OK;
 }
 
 //-- Render -------------------------------------------------------------------
@@ -237,6 +238,12 @@ void CVisualizationShadertoy::Render()
 
 bool CVisualizationShadertoy::Start(int iChannels, int iSamplesPerSec, int iBitsPerSample, std::string szSongName)
 {
+  if (!m_creationOK)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "Start called with failed creation before!");
+    return false;
+  }
+
 #ifdef DEBUG_PRINT
   printf("Start %i %i %i %s\n", iChannels, iSamplesPerSec, iBitsPerSample, szSongName.c_str());
 #endif
@@ -794,6 +801,93 @@ double CVisualizationShadertoy::MeasurePerformance(const std::string& shaderPath
 #endif
   UnloadPreset();
   return t;
+}
+
+bool CVisualizationShadertoy::LoadDefaultShaders()
+{
+  int i, j, nPreset;
+  jsmn_parser parser;
+  int nTokens;
+  int bError = true;
+
+  // .........................................
+  // load presets list from external json file
+  // .........................................
+  std::string fullPath = kodi::GetAddonPath("resources/") + g_presetsFile;
+
+  kodi::Log(ADDON_LOG_INFO, "Loading shader list from '%s'", fullPath.c_str());
+
+  std::ifstream t(fullPath);
+  std::string JSON_STRING((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
+
+  jsmn_init(&parser);
+  nTokens = jsmn_parse(&parser, JSON_STRING.c_str(), JSON_STRING.length(), nullptr, 1);
+
+  if (nTokens > 9) // at least one record (6+1A+1A+1S+1O) must be present
+  {
+    jsmntok_t tokens[nTokens];
+    jsmn_init(&parser);
+    nTokens = jsmn_parse(&parser, JSON_STRING.c_str(), JSON_STRING.length(), tokens, nTokens);
+    if (nTokens > 0 && tokens[0].type == JSMN_OBJECT) // '{'
+    {
+      if (tokens[2].type == JSMN_ARRAY) // ':[ [],[],... ]'
+      {
+        g_presets.resize(tokens[2].size); // number of presets
+        nPreset = 0;
+        for (i = 3; i < nTokens; i++)
+        {
+          if (tokens[i].type == JSMN_ARRAY && // [description, file, iChannel0..4]
+              tokens[i].size >= 6) // elements over 6 will be ignored, but don't stop the loading
+          {
+            try
+            {
+              // check that data is as expected
+              for (j = i+1; j <= i+6; j++)
+              {
+                // length of each field between 1 and 41 chars (Unicode will be shorter...)
+                if ((tokens[j].end - tokens[j].start < 1 ) ||
+                    (tokens[j].end - tokens[j].start > 41))
+                  throw 1;
+                // fields 3 to 6 are ~ integer numbers (if they're not, their value will be 0)
+                char testNum = JSON_STRING.c_str()[tokens[j].start];
+                if (j > i+2 && ((testNum < 48 && testNum != 45) || testNum > 57))
+                  throw 2;
+              }
+
+              g_presets[nPreset].name = std::string(JSON_STRING, (size_t)tokens[i+1].start, (size_t)(tokens[i+1].end-tokens[i+1].start));
+              g_presets[nPreset].file = std::string(JSON_STRING, (size_t)tokens[i+2].start, (size_t)(tokens[i+2].end-tokens[i+2].start));
+              g_presets[nPreset].channel[0] = chunk_to_int( JSON_STRING.c_str(), &tokens[i+3] );
+              g_presets[nPreset].channel[1] = chunk_to_int( JSON_STRING.c_str(), &tokens[i+4] );
+              g_presets[nPreset].channel[2] = chunk_to_int( JSON_STRING.c_str(), &tokens[i+5] );
+              g_presets[nPreset].channel[3] = chunk_to_int( JSON_STRING.c_str(), &tokens[i+6] );
+            }
+            catch (...)
+            {
+              kodi::Log(ADDON_LOG_ERROR, "Incorrect data in json file while reading shader #%i\n", (nPreset+1));
+              break;
+            }
+
+            nPreset++;
+            i += tokens[i].size;
+          }
+          else
+          {
+            kodi::Log(ADDON_LOG_ERROR, "JSON: incorrect shader #%i", (nPreset+1));
+            break;
+          }
+        }
+        bError = false;
+      }
+    }
+  }
+
+  if (bError)
+  {
+    kodi::Log(ADDON_LOG_ERROR, "Failed to load shader list from '%s'", fullPath.c_str());
+    return false;
+  }
+
+  return true;
 }
 
 ADDONCREATOR(CVisualizationShadertoy) // Don't touch this!
