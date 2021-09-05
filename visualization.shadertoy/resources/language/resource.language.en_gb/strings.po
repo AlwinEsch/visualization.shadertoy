@@ -123,3 +123,11 @@ msgstr ""
 msgctxt "#30029"
 msgid "Channel 3 as *.png"
 msgstr ""
+
+msgctxt "#30030"
+msgid "Shadertoy Visualization"
+msgstr ""
+
+msgctxt "#30031"
+msgid "Incorrect reading of the given JSON file, check whether it is correct and available."
+msgstr ""
