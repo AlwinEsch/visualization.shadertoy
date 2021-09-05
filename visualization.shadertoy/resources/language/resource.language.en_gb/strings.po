@@ -143,3 +143,19 @@ msgstr ""
 msgctxt "#30034"
 msgid "Define a single shader"
 msgstr ""
+
+msgctxt "#30035"
+msgid "Show help about preset file"
+msgstr ""
+
+msgctxt "#30036"
+msgid "This open a text viewer where gives help and how a preset file in JSON format need be defined."
+msgstr ""
+
+msgctxt "#30037"
+msgid "Help about JSON file to define own shaders"
+msgstr ""
+
+msgctxt "#30038"
+msgid "[B][I]User definable shader list within JSON file[/I][/B][CR][CR]A e.g. [B]presets.json[/B] can be used to set own shaders and related parts by self.[CR]Within addon settings can be this set to an own path where can be somewhere else.[CR][CR]It should be:[CR][I]  1.[/I] Name of preset, where could be text or number where set within [I]strings.po[/I][CR][I]  2.[/I] glsl shader to use, if path not added becomes them within addon used. Optionally can be a own path added to use glsl from somewhere outside, or to set with './' to use same path as Json, also can be '../' used get lower paths.[CR][I]  3.[/I] Channel value on place 0. This thought to define used texture, or if set with \"audio\" to pass related stream data within texture. The place definition to related PNG file is like before for shader file.[CR][I]  4.[/I] Channel value on place 1. Same description as 0.[CR][I]  5.[/I] Channel value on place 2. Same description as 0.[CR][I]  6.[/I] Channel value on place 3. Same description as 0.[CR][I]  7.[/I] [I][Optional][/I] On here can be [B]gl_only[/B] added to make this preset only available to OpenGL.[CR][CR][B]Example:[/B][CR][COLOR white][COLOR green]{[/COLOR] [COLOR blue]\"presets\"[/COLOR]:[[CR][COLOR gray]/* Here the standard way used by addon itself */[/COLOR][CR][ [COLOR red]\"The Disco Tunnel by poljere\"[/COLOR],  [COLOR red]\"discotunnel.frag.glsl\"[/COLOR], [COLOR red]\"tex02.png\"[/COLOR], [COLOR red]\"tex15.png\"[/COLOR], [COLOR red]\"audio\"[/COLOR], [COLOR red]\"\"[/COLOR] ],[CR][COLOR gray]/* In here name defined to entry inside strings.po */[/COLOR][CR][ 30100, [COLOR red]\"audioeclipse.frag.glsl\"[/COLOR], [COLOR red]\"audio\"[/COLOR], [COLOR red]\"\"[/COLOR], [COLOR red]\"\"[/COLOR], [COLOR red]\"\"[/COLOR] ],[CR][COLOR gray]/* With this how a used can define everything to his own file paths */[/COLOR][CR][ [COLOR red]\"My own one\"[/COLOR], [COLOR red]\"/COMPLETE_PATH_TO YOURS/your.frag.glsl\"[/COLOR], [COLOR red]\"audio\"[/COLOR], [COLOR red]\"/COMPLETE_PATH_TO YOURS/your_image.png\"[/COLOR], [COLOR red]\"\"[/COLOR], [COLOR red]\"\"[/COLOR] ],[CR][COLOR gray]/* On this is the optional \"gl_only\" added as example */[/COLOR][CR][ [COLOR red]\"Polar Beats by sauj123\"[/COLOR], [COLOR red]\"polarbeats.frag.glsl\"[/COLOR], [COLOR red]\"audio\"[/COLOR], [COLOR red]\"\"[/COLOR], [COLOR red]\"\"[/COLOR], [COLOR red]\"\"[/COLOR], [COLOR red]\"gl_only\"[/COLOR] ],[CR][COLOR gray]/* For here if related files in same folder as related Json file */[/COLOR][CR][ [COLOR red]\"Another one\"[/COLOR], [COLOR red]\"./another.frag.glsl\"[/COLOR], [COLOR red]\"./my_01.png\"[/COLOR], [COLOR red]\"./my_02.png\"[/COLOR], [COLOR red]\"audio\"[/COLOR], [COLOR red]\"\"[/COLOR] ],[CR][COLOR gray]/* With this to select texture image by file name, used path inside addon dir */[/COLOR][CR][ [COLOR red]\"Fractal Land by Kali\"[/COLOR], [COLOR red]\"fractalland.frag.glsl\"[/COLOR], [COLOR red]\"tex02.png\"[/COLOR], [COLOR red]\"tex15.png\"[/COLOR], [COLOR red]\"audio\"[/COLOR], [COLOR red]\"\"[/COLOR] ][CR]][COLOR green]}[/COLOR][/COLOR]"
+msgstr ""

@@ -25,7 +25,7 @@ Example:
 { "presets":[
 /* Here the standard way used by addon itself */
 [ "The Disco Tunnel by poljere",  "discotunnel.frag.glsl",                  "tex02.png, "tex15.png", "audio", "" ],
-/* In here name defined to entry inside atrings.po */
+/* In here name defined to entry inside strings.po */
 [ 30100,                          "audioeclipse.frag.glsl",                 "audio", "", "", "" ],
 /* With this how a used can define everything to his own file paths */
 [ "My own one",                   "/COMPLETE_PATH_TO YOURS/your.frag.glsl", "audio", "/COMPLETE_PATH_TO YOURS/your_image.png", "", "" ],
