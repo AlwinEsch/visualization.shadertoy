@@ -131,3 +131,15 @@ msgstr ""
 msgctxt "#30031"
 msgid "Incorrect reading of the given JSON file, check whether it is correct and available."
 msgstr ""
+
+msgctxt "#30032"
+msgid "Path to own preset list"
+msgstr ""
+
+msgctxt "#30033"
+msgid "Within here can be an own path defined to a preset list within JSON format. If you leave empty, addon use his own preset file."
+msgstr ""
+
+msgctxt "#30034"
+msgid "Define a single shader"
+msgstr ""
