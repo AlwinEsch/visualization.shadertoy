@@ -1,3 +1,9 @@
+[B]20.1.0[/B]
+- Add new feature to allow read of available presets from a external file in JSON format
+  - There one as standard with 'presets.json' on addon
+  - Further can user set within settings to a own file
+  - Also to help about is within settings a button added to open text window with description about
+
 [B]20.0.0[/B]
 - Change test builds to 'Kodi 20 Nexus'
 - Increase version to 20.0.0
